@@ -1,0 +1,11 @@
+.container {
+	display: flex;
+}
+
+.messageBox {
+	flex-grow: 1;
+}
+
+.playerList {
+	flex-grow: 0;
+}
