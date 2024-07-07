@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
 import "./room.css";
 
-//const socket = io("http://localhost:3001"); //localhost
-const socket = io("http://52.47.126.198:3001/"); //teacher's server
+const socket = io("http://localhost:3001"); 
+//const socket = io("http://52.47.126.198:3001/"); //teacher's server
 
 const ROOM_SIZE = 500;
 
@@ -119,16 +119,16 @@ function Room() {
 						socket.emit("sendMessage", {user : socket.id, message : document.getElementById("message").value});
 					}}>Send</button>
 				</form>
-				{/* {(
-					Object.entries(messages).map(([user, message]) => (
-						<div key={user} className="message">
-							<p>{user}</p>
+				{(
+					Object.entries(messages).map(([id, message]) => (
+						<div key={id} className="player">
+							<h5>{message.user}</h5>
 							<p>
-								{message}
+								{message.message}
 							</p>
 						</div>
 					))
-				)} */}
+				)}
 			</div>
 			<div className="playerList">
 				{(
