@@ -26,6 +26,8 @@ const getRandomColor = () => {
 	return color;
 };
 
+const messages = [];
+
 io.on("connection", (socket) => {
 	console.log("A user connected:", socket.id);
 	players[socket.id] = {
@@ -35,6 +37,8 @@ io.on("connection", (socket) => {
 	}; // Start in the center with a random color
 
 	socket.emit("currentPlayers", players);
+	socket.emit("currentMessages", messages);
+
 	socket.broadcast.emit("newPlayer", {
 		id: socket.id,
 		x: ROOM_SIZE / 2,
@@ -73,6 +77,12 @@ io.on("connection", (socket) => {
 		delete players[socket.id];
 		io.emit("playerDisconnected", socket.id);
 		console.log("A user disconnected:", socket.id);
+	});
+
+	socket.on("sendMessage", (message) => {
+		messages.push({ user: message.user, message: message.message });
+		io.emit("newMessage", { user: message.user, message: message.message });
+		console.log("new message : ", message);
 	});
 });
 
