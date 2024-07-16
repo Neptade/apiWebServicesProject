@@ -46,7 +46,7 @@ async function updateStats(cUsername, uStat) {
     const database = client.db('blockGameProject');
     const playerData = database.collection('blockGameProject');
 
-    const {username, size, speed, sizeIncrease, speedIncrease} = readUserAccount(cUsername);
+    const {username, size, speed, sizeIncrease, speedIncrease} = playerData.findOne({ username: cUsername }, { projection: { size: 1, speed: 1, sizeIncrease: 1, speedIncrease: 1 } });
 
     if (uStat == 'sizeIncrease' || uStat == 'speedIncrease') {
         const query = { username: cUsername };
@@ -101,7 +101,7 @@ async function insertUser(cUsername, cEmail) {
     const database = client.db('blockGameProject');
     const Login = database.collection('blockGameProject');
 
-    const newUser = { username: cUsername, email: cEmail, size: 20, speed: 5, sizeIncrease: 1, speedIncrease: 1 };
+    const newUser = { username: cUsername, email: cEmail, size: 20, speed: 5, sizeIncrease: 1, speedIncrease: 1, points: 0 };
     const insertStatus = await Login.insertOne(newUser);
 
     return insertStatus;
