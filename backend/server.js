@@ -14,7 +14,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
 	cors: {
-		origin: "http://localhost:3000", 
+		origin: "http://localhost:3000/game", 
 		methods: ["GET", "POST"],
 	},
 });
@@ -74,13 +74,13 @@ io.on("connection", (socket) => {
 				player.x = Math.max(player.x - STEP, 0);
 				break;
 			case "right":
-				player.x = Math.min(player.x + STEP, ROOM_SIZE - 20); // Assuming player size is 20x20 pixels
+				player.x = Math.min(player.x + STEP, ROOM_SIZE); 
 				break;
 			case "up":
 				player.y = Math.max(player.y - STEP, 0);
 				break;
 			case "down":
-				player.y = Math.min(player.y + STEP, ROOM_SIZE - 20);
+				player.y = Math.min(player.y + STEP, ROOM_SIZE);
 				break;
 		}
 		io.emit("playerMoved", {
