@@ -1,21 +1,39 @@
+const { authRouter } = require('./auth/authRouter');
+const { useGoogleStrategy } = require('./auth/passport.config.js');
+const { jwtAuth } = require('./auth/jwtAuth');
 const express = require("express");
-const http = require("http");
-const socketIo = require("socket.io");
+const session = require('express-session');
 const cors = require("cors");
+const http = require("http");
+const bodyParser = require('body-parser');
+const socketIo = require("socket.io");
+const passport = require("passport");
 
+require('dotenv').config();
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
 	cors: {
-		origin: "http://localhost:3000", // React app address
+		origin: "http://localhost:3000", 
 		methods: ["GET", "POST"],
 	},
 });
 
-const ROOM_SIZE = 500; // Room dimensions (500x500 pixels)
-let players = {};
+app.use(bodyParser.json());
+app.use(cors()); 
+app.use(session({
+	secret : process.env.SESSION_SECRET,
+	resave : false,
+	saveUninitialized : true
+}))
+app.use(passport.initialize());
+app.use(passport.session());
+app.use('/auth', authRouter);
 
-app.use(cors()); // Enable CORS
+useGoogleStrategy();
+
+const ROOM_SIZE = 500;
+let players = {};
 
 const getRandomColor = () => {
 	const letters = "0123456789ABCDEF";
@@ -72,7 +90,7 @@ io.on("connection", (socket) => {
 			color: player.color,
 		});
 	});
-
+	
 	socket.on("disconnect", () => {
 		delete players[socket.id];
 		io.emit("playerDisconnected", socket.id);
