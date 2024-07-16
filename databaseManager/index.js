@@ -7,7 +7,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-const client = new MongoClient("mongodb://localhost:32769");
+const client = new MongoClient("mongodb://localhost:32768");
 
 
 app.get('/dbmanager/fetch-user-data/:username', (req, res) => {
@@ -23,7 +23,7 @@ app.get('/dbmanager/fetch-user-data/:username', (req, res) => {
 
 async function readUserAccount(cUsername) {
     const database = client.db('blockGameProject');
-    const Login = database.collection('playerData');
+    const Login = database.collection('blockGameProject');
 
     const query = { username: cUsername };
     const userInfo = await Login.findOne(query);
@@ -31,7 +31,7 @@ async function readUserAccount(cUsername) {
     return userInfo;
 }
 
-app.post('dbmanager/update-stats', (req, res) => {
+app.post('/dbmanager/update-stats', (req, res) => {
     const {username, updatedStat} = req.body;
     updateStats(username, updatedStat).then((result) => {
         res.json(result);
@@ -44,7 +44,7 @@ app.post('dbmanager/update-stats', (req, res) => {
 
 async function updateStats(cUsername, uStat) {
     const database = client.db('blockGameProject');
-    const playerData = database.collection('playerData');
+    const playerData = database.collection('blockGameProject');
 
     const {username, size, speed, sizeIncrease, speedIncrease} = readUserAccount(cUsername);
 
@@ -64,6 +64,38 @@ async function updateStats(cUsername, uStat) {
 
     return updateStatus;
 }
+
+app.get('/dbmanager/getUserByEmail/:email' , (req, res) => {
+    const email = req.params.email;
+    getUserByEmail(email).then((result) => {
+        res.json(result);
+        console.log(result);
+    }).catch((error) => {
+        console.log(error);
+        res.status(500).json({message : 'Internal server error'});
+    });
+});
+
+async function getUserByEmail(cEmail) {
+    const database = client.db('blockGameProject');
+    const Login = database.collection('blockGameProject');
+    console.log("called2 " + cEmail);
+
+    const query = { email: `${cEmail}` };
+    const userInfo = await Login.findOne(query)
+    return userInfo;
+}
+
+app.post('/dbmanager/insertUser', (req, res) => {
+    const {username, email} = req.body;
+    insertUser(username, email).then((result) => {
+        res.json(result);
+        console.log(result);
+    }).catch((error) => {
+        console.log(error);
+        res.status(500).json({message : 'Internal server error'});
+    });
+});
 
 const PORT = process.env.PORT || 8085;
     app.listen(PORT, () => {console.log(`Server running on port ${PORT}`);
