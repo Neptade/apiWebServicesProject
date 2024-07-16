@@ -97,6 +97,16 @@ app.post('/dbmanager/insertUser', (req, res) => {
     });
 });
 
+async function insertUser(cUsername, cEmail) {
+    const database = client.db('blockGameProject');
+    const Login = database.collection('blockGameProject');
+
+    const newUser = { username: cUsername, email: cEmail, size: 20, speed: 5, sizeIncrease: 1, speedIncrease: 1 };
+    const insertStatus = await Login.insertOne(newUser);
+
+    return insertStatus;
+}
+
 const PORT = process.env.PORT || 8085;
     app.listen(PORT, () => {console.log(`Server running on port ${PORT}`);
 });
