@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import io from "socket.io-client";
 import "./room.css";
 
@@ -87,6 +88,7 @@ function Room() {
 
 	return (
 		<div className="container">
+			<Link to={`/profile`}>Profile</Link>
 			<div className="gameBox" style={{
 				position: "relative",
 				width: ROOM_SIZE,

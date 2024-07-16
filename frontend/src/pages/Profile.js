@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from "react-router-dom";
 
 const ValueAdjuster = () => {
   const [values, setValues] = useState({
@@ -24,6 +25,7 @@ const ValueAdjuster = () => {
 
   return (
     <div>
+      <Link to="/">Home</Link>
       {Object.keys(values).map(key => (
         <div key={key} style={{ margin: '10px' }}>
           <span>{key}: {values[key]}</span>
