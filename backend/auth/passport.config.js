@@ -27,14 +27,16 @@ function useGoogleStrategy() {
                             username: profile._json.name,
                             email: profile._json.email,
                         };
-                        user = await fetch(`http://localhost:8085/dbmanager/insertUser/${profile._json.email}`, { 
+                        let response = await fetch(`http://localhost:8085/dbmanager/insertUser`, { 
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
                               },
                             body: JSON.stringify(newUser)
                         });
-                        done(null, user);
+                        let createdUser = await response.json();
+                        console.log(createdUser);
+                        done(null, createdUser);
                     }
                 } catch (err) {
                     console.error(err);
