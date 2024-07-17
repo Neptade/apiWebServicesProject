@@ -3,7 +3,13 @@ import { Link } from "react-router-dom";
 import io from "socket.io-client";
 import "./room.css";
 
-const socket = io("http://localhost:3001"); 
+const token = localStorage.getItem("jwtToken");
+
+const socket = io('http://localhost:3001', {
+    auth: {
+        token: token
+    }
+});
 //const socket = io("http://52.47.126.198:3001/"); //teacher's server
 
 const ROOM_SIZE = 500;

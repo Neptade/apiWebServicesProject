@@ -1,6 +1,6 @@
 const { authRouter } = require('./auth/authRouter');
 const { useGoogleStrategy } = require('./auth/passport.config.js');
-const { jwtAuth } = require('./auth/jwtAuth');
+const { jwtAuthRest, jwtAuthWebSocket } = require('./auth/jwtAuth');
 const express = require("express");
 const session = require('express-session');
 const cors = require("cors");
@@ -14,10 +14,15 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
 	cors: {
-		origin: "http://localhost:3000/game", 
+		origin: "http://localhost:3000", 
 		methods: ["GET", "POST"],
 	},
 });
+io.use((socket, next) => {
+    jwtAuthWebSocket(socket, next);
+	console.log("authenticated socket connected");
+});
+
 
 app.use(bodyParser.json());
 app.use(cors()); 
@@ -34,6 +39,7 @@ useGoogleStrategy();
 
 const ROOM_SIZE = 500;
 let players = {};
+const messages = [];
 
 const getRandomColor = () => {
 	const letters = "0123456789ABCDEF";
@@ -43,8 +49,6 @@ const getRandomColor = () => {
 	}
 	return color;
 };
-
-const messages = [];
 
 io.on("connection", (socket) => {
 	console.log("A user connected:", socket.id);

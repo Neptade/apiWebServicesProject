@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const env = process.env; // Ensure to use process.env to access environment variables
 
-const jwtAuth = (req) => {
+const jwtAuthRest = (req) => {
     const token = req.header('Authorization');
     if (!token) {
         throw new Error("Authorization token is missing");
@@ -18,4 +18,19 @@ const jwtAuth = (req) => {
     }
 };
 
-module.exports = { jwtAuth };
+function jwtAuthWebSocket(socket, next) {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+        return next(new Error('Authentication error'));
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return next(new Error('Authentication error'));
+        }
+        socket.user = decoded;
+        next();
+    });
+}
+
+module.exports = { jwtAuthRest, jwtAuthWebSocket };
