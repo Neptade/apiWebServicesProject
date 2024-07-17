@@ -19,7 +19,7 @@ authRouter.get(
       { expiresIn: "1h" },
     );
     res.cookie('jwtToken', token);
-    res.redirect("http://localhost:3000/game");
+    res.redirect("http://localhost:3000/loginCheck");
   }
 );
 
