@@ -8,19 +8,22 @@ const ValueAdjuster = () => {
     sizeIncrease: 0,
     speedIncrease: 0,
   });
+  const token = localStorage.getItem("jwtToken");
 
-  const handleIncrement = (key) => {
+  const handleIncrement = async (key) => {
+    console.log('incrementing', key);
     setValues(prevValues => ({
       ...prevValues,
       [key]: prevValues[key] + 1
     }));
-  };
-
-  const handleDecrement = (key) => {
-    setValues(prevValues => ({
-      ...prevValues,
-      [key]: prevValues[key] - 1
-    }));
+    const response = await fetch(`http://localhost:3001/profile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({token, key}),
+    });
   };
 
   return (
@@ -30,7 +33,6 @@ const ValueAdjuster = () => {
         <div key={key} style={{ margin: '10px' }}>
           <span>{key}: {values[key]}</span>
           <button onClick={() => handleIncrement(key)}>▲</button>
-          <button onClick={() => handleDecrement(key)}>▼</button>
         </div>
       ))}
     </div>

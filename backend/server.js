@@ -5,6 +5,7 @@ const express = require("express");
 const session = require('express-session');
 const cors = require("cors");
 const http = require("http");
+const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
 const socketIo = require("socket.io");
 const passport = require("passport");
@@ -34,7 +35,21 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use('/auth', authRouter);
-
+app.post('/profile',
+	async (req, res) => {
+		jwtAuthRest(req);
+		const { token, key } = req.body;
+		const decoded = jwt.verify(token, process.env.JWT_SECRET || '');
+        email = decoded['user']['email'];
+		await fetch (`http://localhost:8085/dbmanager/update-stats`, {
+			method : 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ email, key }),
+		}).then((res) => res.json()).then((data) => res.json(data));
+	}
+)
 useGoogleStrategy();
 
 const ROOM_SIZE = 500;
@@ -61,6 +76,17 @@ io.on("connection", async (socket) => {
 		y: ROOM_SIZE / 2,
 		color: getRandomColor(),
 	}; // Start in the center with a random color
+
+	socket.emit("currentPlayers", players);
+	socket.emit("currentMessages", messages);
+	socket.emit("playerSize", await fetch(`http://localhost:8085/dbmanager/getSize/${email}`).then((res) => res.json()).then((data) => data.size));
+
+	socket.broadcast.emit("newPlayer", {
+		id: email,
+		x: ROOM_SIZE / 2,
+		y: ROOM_SIZE / 2,
+		color: players[email].color,
+	});
 
 	socket.on("reload", async () => {
 		socket.emit("currentPlayers", players);

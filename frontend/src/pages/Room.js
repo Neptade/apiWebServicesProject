@@ -5,11 +5,11 @@ import "./room.css";
 
 const token = localStorage.getItem("jwtToken");
 
-		const socket = io('http://localhost:3001', {
-			auth: {
-				token: token
-			}
-		});
+const socket = io('http://localhost:3001', {
+	auth: {
+		token: token
+	}
+});
 
 
 //const socket = io("http://52.47.126.198:3001/"); //teacher's server

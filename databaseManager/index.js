@@ -32,8 +32,8 @@ async function readUserAccount(cUsername) {
 }
 
 app.post('/dbmanager/update-stats', (req, res) => {
-    const {username, updatedStat} = req.body;
-    updateStats(username, updatedStat).then((result) => {
+    const {email, key} = req.body;
+    updateStats(email, key).then((result) => {
         res.json(result);
         console.log(result);
     }).catch((error) => {
@@ -42,27 +42,36 @@ app.post('/dbmanager/update-stats', (req, res) => {
     });
 });
 
-async function updateStats(cUsername, uStat) {
+async function updateStats(cEmail, uStat) {
     const database = client.db('blockGameProject');
     const playerData = database.collection('blockGameProject');
-
-    const {username, size, speed, sizeIncrease, speedIncrease} = playerData.findOne({ username: cUsername }, { projection: { size: 1, speed: 1, sizeIncrease: 1, speedIncrease: 1 } });
-
-    if (uStat == 'sizeIncrease' || uStat == 'speedIncrease') {
-        const query = { username: cUsername };
-        const newValues = { $inc: {uStat: 1}};
+    const {email, size, speed, sizeIncrease, speedIncrease} = await playerData.findOne({ email: cEmail }, { projection: { email: 1, size: 1, speed: 1, sizeIncrease: 1, speedIncrease: 1 } });
+    
+    console.log({email, size, speed, sizeIncrease, speedIncrease});
+    if (uStat == 'sizeIncrease') {
+        const query = { email: cEmail };
+        const newValues = { $inc: { 'sizeIncrease' : 1}};
+        const updateStatus = await playerData.updateOne(query, newValues);
+        return updateStatus;
+    } 
+    else if (uStat == 'speedIncrease') {
+        const query = { email: cEmail };
+        const newValues = { $inc: { 'speedIncrease' : 1}};
+        const updateStatus = await playerData.updateOne(query, newValues);
+        return updateStatus;
     }
     else if (uStat == 'size') {
-        const query = { username: cUsername };
-        const newValues = { $inc: {uStats: sizeIncrease} };
+        const query = { email: cEmail };
+        const newValues = { $inc: {'size': sizeIncrease} };
+        const updateStatus = await playerData.updateOne(query, newValues);
+        return updateStatus;
     }
     else if (uStat == 'speed') {
-        const query = { username: cUsername };
-        const newValues = { $inc: {uStats: speedIncrease} };
+        const query = { email: cEmail };
+        const newValues = { $inc: {'speed': speedIncrease} };
+        const updateStatus = await playerData.updateOne(query, newValues);
+        return updateStatus;
     }
-    const updateStatus = await playerData.updateOne(query, newValues);
-
-    return updateStatus;
 }
 
 app.get('/dbmanager/getUserByEmail/:email' , (req, res) => {
