@@ -50,6 +50,33 @@ app.post('/profile',
 		}).then((res) => res.json()).then((data) => res.json(data));
 	}
 )
+app.get('/profile',
+	async (req, res) => {
+		jwtAuthRest(req);
+
+		const token = req.header('Authorization');
+		const decoded = jwt.verify(token.substring(7, token.length), process.env.JWT_SECRET || '');
+        email = decoded['user']['email'];
+
+		const points = await fetch(`http://localhost:8085/dbmanager/getPoints/${email}`, {
+			method : 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		}).then((res) => res.json());
+
+		console.log("he has: ",points);
+		const {size, speed, sizeIncrease, speedIncrease} = await fetch(`http://localhost:8085/dbmanager/getStats/${email}`, {
+			method : 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		}).then((res) => res.json());
+		console.log("he has: ",size, speed, sizeIncrease, speedIncrease);
+
+		res.json({points, size, speed, sizeIncrease, speedIncrease});
+	}
+)
 useGoogleStrategy();
 
 const ROOM_SIZE = 500;
@@ -70,12 +97,13 @@ io.on("connection", async (socket) => {
 	let email = socket.user.user.email;
 	let speed = await fetch(`http://localhost:8085/dbmanager/getSpeed/${email}`).then((res) => res.json()).then((data) => data.speed);
 	let size = await fetch(`http://localhost:8085/dbmanager/getSize/${email}`).then((res) => res.json()).then((data) => data.size)
+	let userColor = getRandomColor();
 	console.log("A user connected:", username);
 
 	players[email] = {
 		x: ROOM_SIZE / 2,
 		y: ROOM_SIZE / 2,
-		color: getRandomColor(),
+		color: userColor,
 	}; // Start in the center with a random color
 
 	socket.emit("currentPlayers", players);
@@ -86,10 +114,11 @@ io.on("connection", async (socket) => {
 		id: email,
 		x: ROOM_SIZE / 2,
 		y: ROOM_SIZE / 2,
-		color: players[email].color,
+		color: userColor,
 	});
 
 	socket.on("reload", async () => {
+		console.log("reloading");
 		socket.emit("currentPlayers", players);
 		socket.emit("currentMessages", messages);
 		socket.emit("playerSize", size);
@@ -98,14 +127,13 @@ io.on("connection", async (socket) => {
 			id: email,
 			x: ROOM_SIZE / 2,
 			y: ROOM_SIZE / 2,
-			color: players[email].color,
+			color: userColor,
 		});
 	});
 
 	socket.on("move", async (direction) => {
 		const player = players[email];
 		const pointsGained = size * speed;
-		console.log("points gained: ", pointsGained);
 		await fetch(`http://localhost:8085/dbmanager/incrementPoints`, {
 			method: 'POST',
 			headers: {
@@ -113,7 +141,6 @@ io.on("connection", async (socket) => {
 			},
 			body: JSON.stringify({ email, pointsGained }),
 		});
-		console.log("points updated");
 		if (!player) return;
 		const STEP = speed; // Number of pixels to move per key press
 		switch (direction) {

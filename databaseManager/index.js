@@ -9,28 +9,6 @@ app.use(cors());
 
 const client = new MongoClient("mongodb://localhost:32768");
 
-
-app.get('/dbmanager/fetch-user-data/:username', (req, res) => {
-    const {username} = req.params;
-    readUserAccount(username).then((result) => {
-        res.json(result);
-        console.log(result);
-    }).catch((error) => {
-        console.log(error);
-        res.status(500).json({message : 'Internal server error'});
-    });
-});
-
-async function readUserAccount(cUsername) {
-    const database = client.db('blockGameProject');
-    const Login = database.collection('blockGameProject');
-
-    const query = { username: cUsername };
-    const userInfo = await Login.findOne(query);
-
-    return userInfo;
-}
-
 app.post('/dbmanager/update-stats', (req, res) => {
     const {email, key} = req.body;
     updateStats(email, key).then((result) => {
@@ -47,7 +25,6 @@ async function updateStats(cEmail, uStat) {
     const playerData = database.collection('blockGameProject');
     const {email, size, speed, sizeIncrease, speedIncrease} = await playerData.findOne({ email: cEmail }, { projection: { email: 1, size: 1, speed: 1, sizeIncrease: 1, speedIncrease: 1 } });
     
-    console.log({email, size, speed, sizeIncrease, speedIncrease});
     if (uStat == 'sizeIncrease') {
         const query = { email: cEmail };
         const newValues = { $inc: { 'sizeIncrease' : 1}};
@@ -159,11 +136,9 @@ async function getSpeed(cEmail) {
 
 app.post("/dbmanager/incrementPoints", (req, res) => {
     const {email, pointsGained} = req.body;
-    console.log(email, pointsGained);
     incrementPoints(email, pointsGained).then((result) => {
         res.json(result);
         console.log(result);
-        console.log("points incremented");
     }).catch((error) => {
         console.log(error);
         res.status(500).json({message : 'Internal server error'});
@@ -179,6 +154,48 @@ async function incrementPoints(cEmail, pointsGained) {
     const updateStatus = await playerData.updateOne(query, newValues);
 
     return updateStatus;
+}
+
+app.get('/dbmanager/getPoints/:email', (req, res) => {
+    const email = req.params.email;
+    getPoints(email).then((result) => {
+        res.json(result);
+        console.log(result);
+    }).catch((error) => {
+        console.log(error);
+        res.status(500).json({message : 'Internal server error'});
+    });
+});
+
+async function getPoints(cEmail) {
+    const database = client.db('blockGameProject');
+    const playerData = database.collection('blockGameProject');
+
+    const query = { email: cEmail };
+    const points = await playerData.findOne(query, { projection: { points: 1 } });
+
+    return points;
+}
+
+app.get('/dbmanager/getStats/:email', (req, res) => {
+    const email = req.params.email;
+    getStats(email).then((result) => {
+        res.json(result);
+        console.log(result);
+    }).catch((error) => {
+        console.log(error);
+        res.status(500).json({message : 'Internal server error'});
+    });
+});
+
+async function getStats(cEmail) {
+    const database = client.db('blockGameProject');
+    const playerData = database.collection('blockGameProject');
+
+    const query = { email: cEmail };
+    const stats = await playerData.findOne(query, { projection: { size: 1, speed: 1, sizeIncrease: 1, speedIncrease: 1 } });
+
+    return stats;
 }
 
 const PORT = process.env.PORT || 8085;
