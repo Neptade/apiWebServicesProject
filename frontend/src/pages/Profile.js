@@ -13,10 +13,6 @@ const ValueAdjuster = () => {
   
   const handleIncrement = async (key) => {
     console.log('incrementing', key);
-    setValues(prevValues => ({
-      ...prevValues,
-      [key]: prevValues[key] + 1
-    }));
     const response = await fetch(`http://localhost:3001/profile`, {
       method: 'POST',
       headers: {

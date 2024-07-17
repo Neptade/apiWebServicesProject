@@ -19,6 +19,7 @@ function Room() {
 	const [playerId, setPlayerId] = useState(null);
 	const [messages, setMessages] = useState([]);
 	const [size, setSize] = useState(0);
+	const [points, setPoints] = useState(0);
 
 	useEffect(() => {
 		socket.emit("reload");
@@ -54,7 +55,9 @@ function Room() {
 		socket.on("newMessage", (message) => {
 			setMessages((messages) => [...messages, message]);
 		});
-
+		socket.on("pointUpdate", (pointUpdate) => {
+			setPoints(pointUpdate.points);
+		});
 		return () => {
 			socket.off("currentPlayers");
 			socket.off("newPlayer");
@@ -123,6 +126,7 @@ function Room() {
 					);
 				})}
 			</div>
+			points: {points}
 			<div className="messageBox">
 				<form input="text">
 					<input type="text" id="message" name="message" />

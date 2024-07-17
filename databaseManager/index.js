@@ -86,7 +86,7 @@ async function insertUser(cUsername, cEmail) {
     const database = client.db('blockGameProject');
     const Login = database.collection('blockGameProject');
 
-    const newUser = { username: cUsername, email: cEmail, size: 20, speed: 5, sizeIncrease: 1, speedIncrease: 1, points: 0 };
+    const newUser = { username: cUsername, email: cEmail, size: 10, speed: 1, sizeIncrease: 1, speedIncrease: 1, points: 0 };
     const insertStatus = await Login.insertOne(newUser);
 
     return insertStatus;
@@ -148,7 +148,8 @@ app.post("/dbmanager/incrementPoints", (req, res) => {
 async function incrementPoints(cEmail, pointsGained) {
     const database = client.db('blockGameProject');
     const playerData = database.collection('blockGameProject');
-
+    console.log('incrementing points');
+    console.log(pointsGained);
     const query = { email: cEmail };
     const newValues = { $inc: { 'points' : pointsGained}};
     const updateStatus = await playerData.updateOne(query, newValues);

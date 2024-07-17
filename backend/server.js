@@ -41,13 +41,43 @@ app.post('/profile',
 		const { token, key } = req.body;
 		const decoded = jwt.verify(token, process.env.JWT_SECRET || '');
         email = decoded['user']['email'];
-		await fetch (`http://localhost:8085/dbmanager/update-stats`, {
-			method : 'POST',
+		const statValues = await fetch(`http://localhost:8085/dbmanager/getUserByEmail/${email}`, {
+			method : 'GET',
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({ email, key }),
-		}).then((res) => res.json()).then((data) => res.json(data));
+		}).then((res) => res.json());
+		
+		let requiredPoints = 0;
+		if (key === 'size' || key === 'speed') {
+			requiredPoints = Math.exp(Math.floor(statValues[key] / 10));
+		}
+		else {
+			requiredPoints = Math.exp(statValues[key]);
+		}
+		if (statValues['points'] < requiredPoints) {
+			res.status(400).json({ message: 'Insufficient points' });
+			return;
+		}
+		else {
+			console.log('updating stats');
+			await fetch (`http://localhost:8085/dbmanager/update-stats`, {
+				method : 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ email, key }),
+			}).then((res) => res.json()).then((data) => res.json(data));
+			let pointsGained = Math.floor((-1 * requiredPoints)/1);
+			console.log('reducing points by', pointsGained);
+			await fetch(`http://localhost:8085/dbmanager/incrementPoints`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ email, pointsGained }),
+			});
+		}
 	}
 )
 app.get('/profile',
@@ -65,14 +95,12 @@ app.get('/profile',
 			},
 		}).then((res) => res.json());
 
-		console.log("he has: ",points);
 		const {size, speed, sizeIncrease, speedIncrease} = await fetch(`http://localhost:8085/dbmanager/getStats/${email}`, {
 			method : 'GET',
 			headers: {
 				'Content-Type': 'application/json',
 			},
 		}).then((res) => res.json());
-		console.log("he has: ",size, speed, sizeIncrease, speedIncrease);
 
 		res.json({points, size, speed, sizeIncrease, speedIncrease});
 	}
@@ -163,6 +191,7 @@ io.on("connection", async (socket) => {
 			y: player.y,
 			color: player.color,
 		});
+		io.emit("pointUpdate", { id: email, points: pointsGained });
 	});
 	
 	socket.on("disconnect", () => {
