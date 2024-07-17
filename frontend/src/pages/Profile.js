@@ -25,7 +25,7 @@ const ValueAdjuster = () => {
 
   return (
     <div>
-      <Link to="/">Home</Link>
+      <Link to="/game">game</Link>
       {Object.keys(values).map(key => (
         <div key={key} style={{ margin: '10px' }}>
           <span>{key}: {values[key]}</span>
