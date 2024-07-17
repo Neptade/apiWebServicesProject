@@ -69,6 +69,7 @@ io.on("connection", async (socket) => {
 	let username = socket.user.user.username;
 	let email = socket.user.user.email;
 	let speed = await fetch(`http://localhost:8085/dbmanager/getSpeed/${email}`).then((res) => res.json()).then((data) => data.speed);
+	let size = await fetch(`http://localhost:8085/dbmanager/getSize/${email}`).then((res) => res.json()).then((data) => data.size)
 	console.log("A user connected:", username);
 
 	players[email] = {
@@ -79,7 +80,7 @@ io.on("connection", async (socket) => {
 
 	socket.emit("currentPlayers", players);
 	socket.emit("currentMessages", messages);
-	socket.emit("playerSize", await fetch(`http://localhost:8085/dbmanager/getSize/${email}`).then((res) => res.json()).then((data) => data.size));
+	socket.emit("playerSize", size);
 
 	socket.broadcast.emit("newPlayer", {
 		id: email,
@@ -91,7 +92,7 @@ io.on("connection", async (socket) => {
 	socket.on("reload", async () => {
 		socket.emit("currentPlayers", players);
 		socket.emit("currentMessages", messages);
-		socket.emit("playerSize", await fetch(`http://localhost:8085/dbmanager/getSize/${email}`).then((res) => res.json()).then((data) => data.size));
+		socket.emit("playerSize", size);
 
 		socket.broadcast.emit("newPlayer", {
 			id: email,
@@ -101,8 +102,18 @@ io.on("connection", async (socket) => {
 		});
 	});
 
-	socket.on("move", (direction) => {
+	socket.on("move", async (direction) => {
 		const player = players[email];
+		const pointsGained = size * speed;
+		console.log("points gained: ", pointsGained);
+		await fetch(`http://localhost:8085/dbmanager/incrementPoints`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ email, pointsGained }),
+		});
+		console.log("points updated");
 		if (!player) return;
 		const STEP = speed; // Number of pixels to move per key press
 		switch (direction) {

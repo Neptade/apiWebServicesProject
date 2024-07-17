@@ -157,6 +157,30 @@ async function getSpeed(cEmail) {
     return speed;
 }
 
+app.post("/dbmanager/incrementPoints", (req, res) => {
+    const {email, pointsGained} = req.body;
+    console.log(email, pointsGained);
+    incrementPoints(email, pointsGained).then((result) => {
+        res.json(result);
+        console.log(result);
+        console.log("points incremented");
+    }).catch((error) => {
+        console.log(error);
+        res.status(500).json({message : 'Internal server error'});
+    });
+});
+
+async function incrementPoints(cEmail, pointsGained) {
+    const database = client.db('blockGameProject');
+    const playerData = database.collection('blockGameProject');
+
+    const query = { email: cEmail };
+    const newValues = { $inc: { 'points' : pointsGained}};
+    const updateStatus = await playerData.updateOne(query, newValues);
+
+    return updateStatus;
+}
+
 const PORT = process.env.PORT || 8085;
     app.listen(PORT, () => {console.log(`Server running on port ${PORT}`);
 });
