@@ -191,7 +191,8 @@ io.on("connection", async (socket) => {
 			y: player.y,
 			color: player.color,
 		});
-		io.emit("pointUpdate", { id: email, points: pointsGained });
+		const totalPoints = await fetch(`http://localhost:8085/dbmanager/getPoints/${email}`).then((res) => res.json());
+		io.emit("pointUpdate", { id: email, points: totalPoints.points });
 	});
 	
 	socket.on("disconnect", () => {
