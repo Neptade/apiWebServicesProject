@@ -5,11 +5,13 @@ import "./room.css";
 
 const token = localStorage.getItem("jwtToken");
 
-const socket = io('http://localhost:3001', {
-    auth: {
-        token: token
-    }
-});
+		const socket = io('http://localhost:3001', {
+			auth: {
+				token: token
+			}
+		});
+
+
 //const socket = io("http://52.47.126.198:3001/"); //teacher's server
 
 const ROOM_SIZE = 500;
@@ -18,8 +20,14 @@ function Room() {
 	const [players, setPlayers] = useState({});
 	const [playerId, setPlayerId] = useState(null);
 	const [messages, setMessages] = useState([]);
+	const [size, setSize] = useState(0);
 
 	useEffect(() => {
+		socket.on("playerSize", (size) => {
+			setSize(size);
+		});
+		socket.emit("reload");
+
 		socket.on('newPlayer', (newPlayer) => {
 			console.log('connected');
 			setPlayers((players) => ({
@@ -49,9 +57,6 @@ function Room() {
 		socket.on("newMessage", (message) => {
 			setMessages((messages) => [...messages, message]);
 		});
-		// socket.on("sendMessage", (message) => {
-		// 	socket.emit("newMessage", {user: socket.id, message : message});
-		// });
 
 		return () => {
 			socket.off("currentPlayers");
@@ -60,11 +65,13 @@ function Room() {
 			socket.off("playerDisconnected");
 			socket.off("currentMessages");
 			socket.off("newMessage");
+			socket.off("playerSize");
 		};
 	}, []);
 
 	useEffect(() => {
-		setPlayerId(socket.id);
+		setPlayerId(socket);
+		console.log(socket)
 
 		const handleKeyDown = (e) => {
 			switch (e.key) {
@@ -107,8 +114,8 @@ function Room() {
 							key={id}
 							style={{
 								position: "absolute",
-								width: 20,
-								height: 20,
+								width: size,
+								height: size,
 								backgroundColor: player.color,
 								left: player.x,
 								top: player.y,

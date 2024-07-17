@@ -79,7 +79,6 @@ app.get('/dbmanager/getUserByEmail/:email' , (req, res) => {
 async function getUserByEmail(cEmail) {
     const database = client.db('blockGameProject');
     const Login = database.collection('blockGameProject');
-    console.log("called2 " + cEmail);
 
     const query = { email: `${cEmail}` };
     const userInfo = await Login.findOne(query)
@@ -105,6 +104,48 @@ async function insertUser(cUsername, cEmail) {
     const insertStatus = await Login.insertOne(newUser);
 
     return insertStatus;
+}
+
+app.get('/dbmanager/getSize/:email', (req, res) => {
+    const email = req.params.email;
+    getSize(email).then((result) => {
+        res.json(result);
+        console.log(result);
+    }).catch((error) => {
+        console.log(error);
+        res.status(500).json({message : 'Internal server error'});
+    });
+});
+
+async function getSize(cEmail) {
+    const database = client.db('blockGameProject');
+    const playerData = database.collection('blockGameProject');
+
+    const query = { email: cEmail };
+    const size = await playerData.findOne(query, { projection: { size: 1 } });
+
+    return size;
+}
+
+app.get('/dbmanager/getSpeed/:email', (req, res) => {
+    const email = req.params.email;
+    getSpeed(email).then((result) => {
+        res.json(result);
+        console.log(result);
+    }).catch((error) => {
+        console.log(error);
+        res.status(500).json({message : 'Internal server error'});
+    });
+});
+
+async function getSpeed(cEmail) {
+    const database = client.db('blockGameProject');
+    const playerData = database.collection('blockGameProject');
+
+    const query = { email: cEmail };
+    const speed = await playerData.findOne(query, { projection: { speed: 1 } });
+
+    return speed;
 }
 
 const PORT = process.env.PORT || 8085;

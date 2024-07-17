@@ -50,29 +50,35 @@ const getRandomColor = () => {
 	return color;
 };
 
-io.on("connection", (socket) => {
-	console.log("A user connected:", socket.id);
-	players[socket.id] = {
+io.on("connection", async (socket) => {
+	let username = socket.user.user.username;
+	let email = socket.user.user.email;
+	let speed = await fetch(`http://localhost:8085/dbmanager/getSpeed/${email}`).then((res) => res.json()).then((data) => data.speed);
+	console.log("A user connected:", username);
+
+	players[email] = {
 		x: ROOM_SIZE / 2,
 		y: ROOM_SIZE / 2,
 		color: getRandomColor(),
 	}; // Start in the center with a random color
 
-	socket.emit("currentPlayers", players);
-	socket.emit("currentMessages", messages);
+	socket.on("reload", async () => {
+		socket.emit("currentPlayers", players);
+		socket.emit("currentMessages", messages);
+		socket.emit("playerSize", await fetch(`http://localhost:8085/dbmanager/getSize/${email}`).then((res) => res.json()).then((data) => data.size));
 
-	socket.broadcast.emit("newPlayer", {
-		id: socket.id,
-		x: ROOM_SIZE / 2,
-		y: ROOM_SIZE / 2,
-		color: players[socket.id].color,
+		socket.broadcast.emit("newPlayer", {
+			id: email,
+			x: ROOM_SIZE / 2,
+			y: ROOM_SIZE / 2,
+			color: players[email].color,
+		});
 	});
 
 	socket.on("move", (direction) => {
-		const player = players[socket.id];
+		const player = players[email];
 		if (!player) return;
-
-		const STEP = 5; // Number of pixels to move per key press
+		const STEP = speed; // Number of pixels to move per key press
 		switch (direction) {
 			case "left":
 				player.x = Math.max(player.x - STEP, 0);
@@ -88,7 +94,7 @@ io.on("connection", (socket) => {
 				break;
 		}
 		io.emit("playerMoved", {
-			id: socket.id,
+			id: email,
 			x: player.x,
 			y: player.y,
 			color: player.color,
@@ -96,14 +102,14 @@ io.on("connection", (socket) => {
 	});
 	
 	socket.on("disconnect", () => {
-		delete players[socket.id];
-		io.emit("playerDisconnected", socket.id);
-		console.log("A user disconnected:", socket.id);
+		delete players[email];
+		io.emit("playerDisconnected", email);
+		console.log("A user disconnected:", email);
 	});
 
 	socket.on("sendMessage", (message) => {
-		messages.push({ user: message.user, message: message.message });
-		io.emit("newMessage", { user: message.user, message: message.message });
+		messages.push({ user: email, message: message.message });
+		io.emit("newMessage", { user:email, message: message.message });
 		console.log("new message : ", message);
 	});
 });
