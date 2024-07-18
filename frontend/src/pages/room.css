@@ -1,16 +1,32 @@
 .container {
 	display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+
 }
 
 
+.container {
+	display: flex;
+}
+
 .messageBox {
 	flex-grow: 1;
+}
+.gameBox{
+	backdrop-filter: blur(10px);
+	margin:100px;
 }
 
 .playerList {
 	flex-grow: 0;
 }
+.link {
+    padding: 20px 20px;
+    background-color: rgba(255, 255, 255, 0.7); 
+    border: 1px solid rgba(0, 0, 0, 0.2); 
+    border-radius: 5px;
+    color: #000; 
+	display:inline-block;
+	max-height: 3vh;
+
+	
+  }

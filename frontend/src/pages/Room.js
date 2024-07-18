@@ -101,7 +101,7 @@ function Room() {
 
 	return (
 		<div className="container">
-			<Link to={`/profile`}>Profile</Link>
+			<Link to={`/profile`} className="link">Profile</Link> 
 			<div className="gameBox" style={{
 				position: "relative",
 				width: ROOM_SIZE,

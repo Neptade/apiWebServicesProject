@@ -54,7 +54,7 @@ const ValueAdjuster = () => {
 
   return (
     <div>
-      <Link to="/game">game</Link>
+      <Link to="/game"  className="link">game</Link>
       <div>
         Points: {points}
       </div>

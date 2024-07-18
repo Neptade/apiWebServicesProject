@@ -1,0 +1,35 @@
+.containerStyle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    background-image: url('./mountain.jpg'); 
+    background-size: cover;
+    background-position: center;
+  }
+  
+  .link {
+    padding: 10px 20px;
+    background-color: rgba(255, 255, 255, 0.7); 
+    border: 1px solid rgba(0, 0, 0, 0.2); 
+    border-radius: 5px;
+    text-decoration: none;
+    color: #000; 
+    margin-bottom: 20px; 
+  }
+  
+  .logo {
+    margin-bottom: 20px; 
+  }
+
+.container{
+
+
+    height: 100vh;
+    background-image: url('./mountain.jpg'); 
+    background-size: auto;
+    background-position: center;
+    background-attachment: fixed;
+}
